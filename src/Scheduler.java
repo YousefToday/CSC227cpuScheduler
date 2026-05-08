@@ -118,10 +118,37 @@ public class Scheduler {
     public void runRoundRobin() {
         System.out.println("\nRunning Round Robin...");
 
-        // TODO: Implement Round Robin scheduling here.
-        // Use data.pollReadyQueue() to get the next process.
+        while (!data.allProcessesCompleted()) {
+            PCB process = data.pollReadyQueue();
+            if (process == null) {
+                continue;
+            }
 
-        printNotImplementedMessage("Round Robin");
+            int startTime = currentTime;
+            if(process.getStartTime()==-1)
+                process.setStartTimeIfFirstRun(startTime);
+            int brustBefore = process.getRemainingTime();
+
+            if (process.getRemainingTime() > SharedData.ROUND_ROBIN_QUANTUM) {
+                currentTime += SharedData.ROUND_ROBIN_QUANTUM;
+            } else {
+                currentTime += process.getRemainingTime();
+            }
+
+            process.reduceRemainingTime(SharedData.ROUND_ROBIN_QUANTUM);
+
+            int endTime = currentTime;
+            int brustAfter = process.getRemainingTime();
+
+            recordGanttEntry(process, startTime, endTime, brustBefore, brustAfter);
+
+            if(brustBefore>SharedData.ROUND_ROBIN_QUANTUM)
+                data.addToReadyQueue(process);
+            else {
+                finishProcess(process);
+            }
+        }
+        printAllResults("Round Robin", false);
         data.setSimulationFinished(true);
     }
 
@@ -162,13 +189,28 @@ public class Scheduler {
      *         release memory
      */
     public void runPriority() {
-        System.out.println("\nRunning Priority Scheduling...");
+        while(!data.allProcessesCompleted()){
+            if(data.isReadyQueueEmpty()) {
+                Thread.yield();
+                continue;
+            }
+            for(PCB p : data.getReadyQueueSnapshot()){
+                checkStarvation(p);
+                applyAgingIfNeeded(p);
+            }
+            PCB p = findHighestPriorityProcess(data.getReadyQueueSnapshot());
+            data.removeFromReadyQueue(p);
+            p.setState("RUNNING");
+            p.setStartTimeIfFirstRun(currentTime);
+            p.setTerminationTime(currentTime + p.getBurstTime());
+            p.setRemainingTime(0);
+            currentTime = p.getTerminationTime();
+            finishProcess(p);
+            recordGanttEntry(p , p.getStartTime() ,p.getTerminationTime() , p.getBurstTime() , 0);;
 
-        // TODO: Implement Priority Scheduling here.
-        // Use findHighestPriorityProcess(data.getReadyQueueSnapshot()).
-
-        printNotImplementedMessage("Priority Scheduling");
+        }
         data.setSimulationFinished(true);
+        printAllResults("non preemptive priority" , true);
     }
 
     /**
@@ -288,11 +330,11 @@ public class Scheduler {
      * If process waited 21 ms, mark it as starved.
      */
     private void checkStarvation(PCB process) {
-        int readyQueueSize = data.getReadyQueueSize();
-        int threshold = readyQueueSize * 5;
+        int N = data.getReadyQueueSize();
+        int limit = N * 5;
         int waitingInReadyQueue = currentTime - process.getReadyQueueEnterTime();
 
-        if (waitingInReadyQueue > threshold) {
+        if (waitingInReadyQueue > limit) {
             process.setStarved(true);
         }
     }

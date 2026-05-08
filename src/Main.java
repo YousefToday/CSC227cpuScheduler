@@ -68,9 +68,7 @@ public class Main {
             data.setSimulationFinished(true);
         }
 
-        /*
-         * Wait for loader thread to finish cleanly.
-         */
+
         try {
             loaderThread.join();
         } catch (InterruptedException e) {
