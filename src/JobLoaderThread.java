@@ -18,10 +18,6 @@ public class JobLoaderThread extends Thread {
                 data.loadProcessToMemory(process);
                 process.setState("READY");
 
-                // Initializes timing values used by priority aging.
-                process.setReadyQueueEnterTime(0);
-                process.setLastAgingTime(0);
-
                 data.addToReadyQueue(process);
 
                 System.out.println("Loaded P" + process.getProcessId()

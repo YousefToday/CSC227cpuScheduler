@@ -92,19 +92,22 @@ public class Scheduler {
                 Thread.yield();
                 continue;
             }
-            for(PCB p : data.getReadyQueueSnapshot()){
-                checkStarvation(p);
-                applyAgingIfNeeded(p);
+
+            PCB process = findHighestPriorityProcess(data.getReadyQueueSnapshot());
+            data.removeFromReadyQueue(process);
+            updateWaitingProcessesForPriority();
+            process.setState("RUNNING");
+            process.setStartTimeIfFirstRun(currentTime);
+            int start = currentTime;
+            int burstBefore = process.getRemainingTime();
+            while (process.getRemainingTime() > 0) {
+                currentTime++;
+                process.reduceRemainingTime(1);
+                updateWaitingProcessesForPriority();
             }
-            PCB p = findHighestPriorityProcess(data.getReadyQueueSnapshot());
-            data.removeFromReadyQueue(p);
-            p.setState("RUNNING");
-            p.setStartTimeIfFirstRun(currentTime);
-            p.setTerminationTime(currentTime + p.getBurstTime());
-            p.setRemainingTime(0);
-            currentTime = p.getTerminationTime();
-            finishProcess(p);
-            recordGanttEntry(p , p.getStartTime() ,p.getTerminationTime() , p.getBurstTime() , 0);;
+            int end = currentTime;
+            recordGanttEntry(process , start ,end , burstBefore , 0);
+            finishProcess(process);
 
         }
         data.setSimulationFinished(true);
@@ -168,22 +171,36 @@ public class Scheduler {
         data.addGanttEntry(entry);
     }
 
-    private void checkStarvation(PCB process) {
-        int N = data.getReadyQueueSize();
-        int limit = N * 5;
-        int waitingInReadyQueue = currentTime - process.getReadyQueueEnterTime();
+    private void updateWaitingProcessesForPriority() {
+        ArrayList<PCB> readyProcesses = data.getReadyQueueSnapshot();
+        int N = readyProcesses.size();
 
-        if (waitingInReadyQueue > limit) {
-            process.setStarved(true);
-        }
-    }
+        for (PCB process : readyProcesses) {
 
-    private void applyAgingIfNeeded(PCB process) {
-        int timeSinceLastAging = currentTime - process.getLastAgingTime();
+            // First time this process is seen waiting in ready queue
+            if (process.getReadyQueueEnterTime() == -1) {
+                process.setReadyQueueEnterTime(currentTime);
+            }
 
-        if (timeSinceLastAging >= SharedData.AGING_INTERVAL) {
-            process.applyAging();
-            process.setLastAgingTime(currentTime);
+            if (process.getLastAgingTime() == -1) {
+                process.setLastAgingTime(currentTime);
+            }
+
+            // Starvation check
+            int starvationLimit = N * 5;
+            int waitingTimeInReadyQueue = currentTime - process.getReadyQueueEnterTime();
+
+            if (waitingTimeInReadyQueue > starvationLimit) {
+                process.setStarved(true);
+            }
+
+            // Aging check
+            int timeSinceLastAging = currentTime - process.getLastAgingTime();
+
+            if (timeSinceLastAging >= SharedData.AGING_INTERVAL) {
+                process.applyAging();
+                process.setLastAgingTime(currentTime);
+            }
         }
     }
 

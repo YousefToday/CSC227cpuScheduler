@@ -33,8 +33,8 @@ public class PCB {
         this.waitingTime = 0;
         this.turnaroundTime = 0;
         this.starved = false;
-        this.readyQueueEnterTime = 0;
-        this.lastAgingTime = 0;
+        this.readyQueueEnterTime = -1;
+        this.lastAgingTime = -1;
     }
 
     // Reduces the remaining burst time after the process uses the CPU.
