@@ -218,13 +218,13 @@ public class Scheduler {
 
     private void printProcessTable() {
         System.out.println("\nProcess Table:");
-        System.out.printf("%-8s %-8s %-8s %-14s %-10s %-12s%n",
+        System.out.printf("%-8s %-8s %-8s %-14s %-10s %-12s\n",
                 "PID", "Burst", "Start", "Termination", "Waiting", "Turnaround");
 
         ArrayList<PCB> processes = data.getAllProcessesSnapshot();
 
         for (PCB process : processes) {
-            System.out.printf("%-8d %-8d %-8d %-14d %-10d %-12d%n",
+            System.out.printf("%-8d %-8d %-8d %-14d %-10d %-12d\n",
                     process.getProcessId(),
                     process.getBurstTime(),
                     process.getStartTime(),
@@ -253,8 +253,8 @@ public class Scheduler {
         double averageWaiting = (double) totalWaiting / processes.size();
         double averageTurnaround = (double) totalTurnaround / processes.size();
 
-        System.out.printf("\nAverage Waiting Time: %.2f ms%n", averageWaiting);
-        System.out.printf("Average Turnaround Time: %.2f ms%n", averageTurnaround);
+        System.out.printf("\nAverage Waiting Time: %.2f ms\n", averageWaiting);
+        System.out.printf("Average Turnaround Time: %.2f ms\n", averageTurnaround);
     }
 
     private void printStarvedProcesses() {

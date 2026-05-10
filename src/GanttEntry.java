@@ -1,5 +1,6 @@
 public class GanttEntry {
 
+    // Represents one execution segment in the Gantt chart.
     private int processId;
     private int startTime;
     private int endTime;
@@ -13,6 +14,7 @@ public class GanttEntry {
         this.burstBefore = burstBefore;
         this.burstAfter = burstAfter;
     }
+
     @Override
     public String toString() {
         return "[" + startTime + " - " + endTime + "] "

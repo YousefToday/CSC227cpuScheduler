@@ -1,7 +1,6 @@
-
-
 public class PCB {
 
+    // Stores all information needed to track a process during scheduling.
     private int processId;
     private String state;
     private int burstTime;
@@ -38,6 +37,7 @@ public class PCB {
         this.lastAgingTime = 0;
     }
 
+    // Reduces the remaining burst time after the process uses the CPU.
     public void reduceRemainingTime(int timeUsed) {
         remainingTime -= timeUsed;
 
@@ -46,12 +46,14 @@ public class PCB {
         }
     }
 
+    // Improves priority for aging. Lower number means higher priority.
     public void applyAging() {
         if (priority > 1) {
             priority--;
         }
     }
 
+    // Calculates final waiting and turnaround times after termination.
     public void calculateFinalTimes() {
         turnaroundTime = terminationTime - arrivalTime;
         waitingTime = turnaroundTime - burstTime;
@@ -61,6 +63,7 @@ public class PCB {
         }
     }
 
+    // Records the first time the process starts running.
     public void setStartTimeIfFirstRun(int currentTime) {
         if (startTime == -1) {
             startTime = currentTime;
@@ -162,7 +165,6 @@ public class PCB {
     public void setLastAgingTime(int lastAgingTime) {
         this.lastAgingTime = lastAgingTime;
     }
-
 
     @Override
     public String toString() {

@@ -5,9 +5,8 @@ public class Main {
     public static void main(String[] args) {
         SharedData data = new SharedData();
 
-
+        // Starts the threads responsible for reading and loading jobs.
         JobReaderThread readerThread = new JobReaderThread(data, "job.txt");
-
         JobLoaderThread loaderThread = new JobLoaderThread(data);
 
         readerThread.start();
@@ -23,6 +22,7 @@ public class Main {
 
         Scheduler scheduler = new Scheduler(data);
 
+        // Runs the scheduling algorithm selected by the user.
         if (choice == 1) {
             scheduler.runSJF();
         } else if (choice == 2) {
@@ -33,7 +33,6 @@ public class Main {
             System.out.println("Invalid choice.");
             data.setSimulationFinished(true);
         }
-
 
         try {
             loaderThread.join();

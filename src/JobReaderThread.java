@@ -26,6 +26,7 @@ public class JobReaderThread extends Thread {
                     continue;
                 }
 
+                // Converts each valid line from the job file into a PCB.
                 PCB process = parseLineToPCB(line, arrivalOrder);
 
                 data.addToJobQueue(process);
@@ -41,10 +42,12 @@ public class JobReaderThread extends Thread {
             System.out.println("Error: job.txt contains a number that could not be parsed.");
             System.out.println("Details: " + e.getMessage());
         } finally {
+            // Tells the other threads that no more jobs will be read.
             data.setReaderFinished(true);
         }
     }
 
+    // Parses a line in the format: processId:burstTime:priority;memoryRequired
     private PCB parseLineToPCB(String line, int arrivalOrder) {
         String[] parts = line.split(";");
         String[] processInfo = parts[0].split(":");
